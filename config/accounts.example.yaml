@@ -1,0 +1,68 @@
+# AdsPower 配置
+adspower:
+  url: "http://localhost:50325"
+  api_key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  # 可选，开启安全校验时需要
+
+# 默认并发数
+concurrency: 3
+
+# 分配模式:
+#   fixed - 固定绑定，每个账号指定 profile_id，1:1 绑定
+#   pool  - 账号池，动态分配给 profile，用完释放回池子
+mode: pool
+
+# 账号列表
+accounts:
+  # ===== fixed 模式示例 =====
+  - name: "account_001"
+    profile_id: "j934xdfa"  # fixed 模式必填
+
+    proxy:
+      host: "geo.iproyal.com"
+      port: 12321
+      username: "myusername"
+      password: "mypassword"
+
+
+    web3:
+      address: "0x..."
+      private_key: "..."
+
+    discord:
+      username: "user#1234"
+      token: "..."
+
+    telegram:
+      phone: "+1234567890"
+      session: "..."
+
+    google:
+      email: "user@gmail.com"
+      password: "..."
+
+    twitter:
+      username: "@user"
+      token: "..."
+
+    custom:
+      note: "可添加任意自定义字段"
+
+  - name: "account_002"
+    profile_id: "k8f2mabc"
+    proxy:
+      host: "geo.iproyal.com"
+      port: 12321
+      username: "myusername"
+      password: "mypassword"
+
+
+  # ===== pool 模式示例 =====
+  # pool 模式下 profile_id 可选，账号会动态分配给 profile
+  # - name: "pool_account_001"
+  #   proxy:
+  #     host: "geo.iproyal.com"
+  #     port: 12321
+  #     username: "user1"
+  #     password: "pass1"
+  #   web3:
+  #     private_key: "..."
