@@ -18,3 +18,13 @@ class Proxy:
             "proxy_user": self.username,
             "proxy_password": self.password,
         }
+
+    def to_multiloginx_config(self) -> dict:
+        """转换为 MultiloginX proxy 格式"""
+        return {
+            "type": "http",
+            "host": self.host,
+            "port": self.port,
+            "username": self.username,
+            "password": self.password,
+        }

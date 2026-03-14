@@ -3,8 +3,14 @@ from dataclasses import dataclass
 
 from playwright.async_api import Browser, Page, async_playwright
 
-from .adspower_client import adspower, AdsPowerError
+from .browser_platform import get_browser_client
+from .config import config, BrowserPlatform
 from .proxy_pool import Proxy
+
+
+class BrowserError(Exception):
+    """浏览器操作错误"""
+    pass
 
 
 @dataclass
@@ -20,6 +26,7 @@ class BrowserManager:
         self._sessions: dict[str, BrowserSession] = {}
         self._playwright = None
         self._lock = asyncio.Lock()
+        self._client = get_browser_client()
 
     async def _ensure_playwright(self):
         if self._playwright is None:
@@ -38,14 +45,30 @@ class BrowserManager:
 
         # 如果提供了代理，先更新环境配置
         if proxy:
-            adspower.update_profile_proxy(profile_id, proxy)
+            self._client.update_profile_proxy(profile_id, proxy)
 
-        # 启动 AdsPower 浏览器
-        browser_data = adspower.start_browser(profile_id, headless=headless)
+        # 启动浏览器
+        try:
+            # MultiloginX 需要额外的参数
+            if config.platform == BrowserPlatform.MULTILOGINX:
+                browser_data = self._client.start_browser(
+                    profile_id,
+                    folder_id=config.multiloginx.folder_id,
+                    headless=headless,
+                    automation_type="playwright"
+                )
+            else:
+                browser_data = self._client.start_browser(
+                    profile_id,
+                    headless=headless
+                )
+        except Exception as e:
+            raise BrowserError(f"Failed to start browser for {profile_id}: {e}")
+
         ws_endpoint = browser_data.get("ws", {}).get("puppeteer")
 
         if not ws_endpoint:
-            raise AdsPowerError(f"Failed to get WebSocket endpoint for {profile_id}")
+            raise BrowserError(f"Failed to get WebSocket endpoint for {profile_id}")
 
         # 连接 Playwright
         await self._ensure_playwright()
@@ -82,7 +105,7 @@ class BrowserManager:
             except Exception:
                 pass
 
-        adspower.stop_browser(profile_id)
+        self._client.stop_browser(profile_id)
 
     async def close_all(self) -> None:
         profile_ids = list(self._sessions.keys())

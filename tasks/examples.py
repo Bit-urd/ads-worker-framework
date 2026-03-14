@@ -12,6 +12,9 @@ class CheckIPTask(BaseWorker):
 
     async def run(self, page: Page):
         await page.goto("https://httpbin.org/ip", wait_until="domcontentloaded")
+        # 1、 填充信息
+        # 2、 注册
+        # 3、 过验证码
         await page.wait_for_timeout(1000)
         content = await page.inner_text("body")
         print(f"[{self.account.name}] IP: {content}")
